@@ -13,7 +13,7 @@
     },
     "pnpm": {
         "packages": "pkgs.nodePackages.pnpm pkgs.jdk21_headless pkgs.gradle",
-        "install": "pnpm install --prefer-offline --no-audit --no-progress --timing && pnpm add @expo/ngrok@^4.1.0 && npx -y expo install expo-dev-client && npx -y expo prebuild --platform android && sed -i 's/org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m/org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=512m/' android/gradle.properties",
+        "install": "pnpm install --prefer-offline && pnpm add @expo/ngrok@^4.1.0 && npx -y expo install expo-dev-client && npx -y expo prebuild --platform android && sed -i 's/org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m/org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=512m/' android/gradle.properties",
         "previewWebPrefix": "\"pnpm\" \"web\" \"--\"",
         "previewAndroidPrefix": "pnpm android"
     },
