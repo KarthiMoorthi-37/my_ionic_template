@@ -1,4 +1,3 @@
-
 { pkgs, packageManager ? "npm", ... }: {
   packages = [
     pkgs.nodejs_20
@@ -21,20 +20,34 @@
       else "npm create expo \"$WS_NAME\" --no-install"
     }
 
+    # Move into project directory
+    cd "$WS_NAME"
+
+    # Install dependencies and prepare Expo environment
+    if [ "${packageManager}" = "pnpm" ]; then
+      pnpm install --prefer-offline
+      pnpm add @expo/ngrok@^4.1.0
+      npx -y expo install expo-dev-client
+      npx -y expo prebuild --platform android
+      sed -i 's/org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m/org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=512m/' android/gradle.properties
+    else
+      ${packageManager} install
+    fi
+
     # Prepare IDX configuration folder
-    mkdir -p "$WS_NAME/.idx/"
+    mkdir -p ".idx"
 
     # Render dev.nix from Jinja template
-    packageManager=${packageManager} j2 ${./devNix.j2} -o "$WS_NAME/.idx/dev.nix"
+    packageManager=${packageManager} j2 ${./devnix.j2} -o ".idx/dev.nix"
 
     # Render README.md from Jinja template
-    packageManager=${packageManager} j2 ${./README.j2} -o "$WS_NAME/README.md"
+    packageManager=${packageManager} j2 ${./README.j2} -o "README.md"
 
     # Set permissions
-    chmod -R +w "$WS_NAME"
+    chmod -R +w .
 
     # Move workspace to output
-    mv "$WS_NAME" "$out"
+    mv . "$out"
 
     # Copy additional IDX files
     mkdir -p "$out/.idx"
