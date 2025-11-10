@@ -19,6 +19,7 @@
         "npm": "npm",
         "pnpm": "pnpm",
         "bun": "bun"
+        "yarn": "yarn"
       },
       "required": true
     }
