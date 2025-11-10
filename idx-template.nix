@@ -1,20 +1,30 @@
-{ pkgs, ... }: {
-  channel = "stable-24.11";
-  packages = [ pkgs.nodejs_20 pkgs.unzip ]; # unzip is required for native development
+{ pkgs, packageManager ? "npm", ... }: {
+  packages = [
+    pkgs.nodejs_20
+    pkgs.yarn
+    pkgs.nodePackages.pnpm
+    pkgs.bun
+    pkgs.j2cli
+    pkgs.nixfmt
+  ];
   bootstrap = ''
-    npx --prefer-offline -y @ionic/cli start "$WS_NAME" blank --type=angular --no-deps --no-git --no-link --no-interactive
-    mkdir "$WS_NAME"/.idx
-    cp ${./dev.nix} "$WS_NAME"/.idx/dev.nix && chmod +w "$WS_NAME"/.idx/dev.nix
+    mkdir -p "$WS_NAME"
+    ${
+      if packageManager == "pnpm" then "pnpm create expo \"$WS_NAME\" --no-install"
+      else if packageManager == "bun" then "bun create expo \"$WS_NAME\" --no-install"
+      else if packageManager == "yarn" then "yarn create expo \"$WS_NAME\" --no-install" 
+      else "npm create expo \"$WS_NAME\" --no-install"
+    }
+    mkdir "$WS_NAME/.idx/"
+    packageManager=${packageManager} j2 ${./devNix.j2} -o "$WS_NAME/.idx/dev.nix"
+    packageManager=${packageManager} j2 ${./README.j2} -o "$WS_NAME/README.md"
+    chmod -R +w "$WS_NAME"
     mv "$WS_NAME" "$out"
     
     mkdir -p "$out/.idx"
-
     chmod -R u+w "$out"
-    # The airules.md file is not present in the ionic template, so this line will fail.
-    # cp -rf ${./.idx/airules.md} "$out/.idx/airules.md"
-    # cp -rf "$out/.idx/airules.md" "$out/GEMINI.md"
+    cp -rf ${./.idx/airules.md} "$out/.idx/airules.md"
+    cp -rf "$out/.idx/airules.md" "$out/GEMINI.md"
     chmod -R u+w "$out"
-
-    (cd "$out"; npm install --package-lock-only --ignore-scripts)
   '';
 }
